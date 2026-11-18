@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Posteingang (3) - Outlook</title>
+  <!-- Authentic Outlook Favicon as SVG Data URI -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230078d4'/%3E%3Cpath d='M19 8h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-8V8z' fill='%23005a9e'/%3E%3Cpath d='M19 12l8 5.5V10l-8 2z' fill='%232899f5'/%3E%3Crect x='3' y='7' width='16' height='18' rx='2' fill='%230078d4' stroke='%23005a9e' stroke-width='0.5'/%3E%3Cellipse cx='11' cy='16' rx='4.5' ry='5.5' fill='none' stroke='%23ffffff' stroke-width='2.2'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --theme-primary: #0078d4;
+      --theme-primary-hover: #106ebe;
+      --theme-primary-dark: #005a9e;
+      --theme-primary-light: #eff6fc;
+      --theme-primary-border: #c7e0f4;
+      --bg-header: #0078d4;
+      --bg-light: #faf9f8;
+      --bg-white: #ffffff;
+      --border-color: #edebe9;
+      --border-darker: #e1dfdd;
+      --text-main: #323130;
+      --text-secondary: #605e5c;
+      --text-disabled: #a19f9d;
+      --item-hover: #f3f2f1;
+      --item-selected: #edebe9;
+      --item-active-blue: #0078d4;
+      --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      font-size: 14px;
+      color: var(--text-main);
+      background-color: var(--bg-white);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: text;
+    }
+
+    /* Top Suite Bar */
+    .suite-bar {
+      height: 48px;
+      background-color: var(--bg-header);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      flex-shrink: 0;
+    }
+
+    .suite-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 260px;
+    }
+
+    .waffle-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: repeat(3, 3px);
+      gap: 3px;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .waffle-btn:hover { background-color: rgba(255, 255, 255, 0.15); }
+    .waffle-btn span {
+      width: 3.5px;
+      height: 3.5px;
+      background-color: #ffffff;
+      border-radius: 50%;
+    }
+
+    .app-title {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .suite-search {
+      flex: 1;
+      max-width: 560px;
+      position: relative;
+    }
+
+    .search-box {
+      width: 100%;
+      height: 32px;
+      background-color: #ffffff;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+    }
+    .search-box:focus-within {
+      box-shadow: 0 0 0 1px #ffffff;
+    }
+    .search-box svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--text-secondary);
+    }
+    .search-input {
+      border: none;
+      outline: none;
+      font-size: 13px;
+      width: 100%;
+      color: var(--text-main);
+      font-family: inherit;
+    }
+    .search-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .suite-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .suite-icon-btn {
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .suite-icon-btn:hover {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+    .suite-icon-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: #004578;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-left: 6px;
+      cursor: pointer;
+    }
+
+    /* Ribbon / Command Bar */
+    .ribbon-bar {
+      height: 44px;
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .btn-new-mail {
+      background-color: var(--theme-primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-new-mail:hover {
+      background-color: var(--theme-primary-hover);
+    }
+    .btn-new-mail svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    .ribbon-sep {
+      height: 20px;
+      width: 1px;
+      background-color: var(--border-darker);
+      margin: 0 4px;
+    }
+
+    .ribbon-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .ribbon-action-btn:hover {
+      background-color: var(--item-hover);
+    }
+    .ribbon-action-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--text-secondary);
+    }
+
+    /* Main Workspace Layout */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Leftmost App Rail */
+    .app-rail {
+      width: 48px;
+      background-color: #f0f0f0;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 8px;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .app-rail-item {
+      width: 38px;
+      height: 38px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      cursor: pointer;
+      position: relative;
+    }
+    .app-rail-item:hover {
+      background-color: #e5e5e5;
+      color: var(--text-main);
+    }
+    .app-rail-item.active {
+      color: var(--theme-primary);
+    }
+    .app-rail-item.active::before {
+      content: '';
+      position: absolute;
+      left: -5px;
+      width: 3px;
+      height: 20px;
+      background-color: var(--theme-primary);
+      border-radius: 0 2px 2px 0;
+    }
+    .app-rail-item svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* Folder Pane */
+    .folder-pane {
+      width: 210px;
+      background-color: var(--bg-light);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 12px 0;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+
+    .folder-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 6px 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .folder-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 16px;
+      cursor: pointer;
+      color: var(--text-main);
+      font-size: 13.5px;
+    }
+    .folder-item:hover {
+      background-color: var(--item-hover);
+    }
+    .folder-item.active {
+      background-color: #e8e8e8;
+      font-weight: 600;
+      color: var(--theme-primary-dark);
+    }
+    .folder-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .folder-item svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--text-secondary);
+    }
+    .folder-item.active svg {
+      fill: var(--theme-primary);
+    }
+    .badge-count {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--theme-primary);
+      background-color: rgba(0, 120, 212, 0.1);
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+
+    /* Message List Pane */
+    .message-list-pane {
+      width: 340px;
+      background-color: #ffffff;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .list-tabs {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 16px;
+      height: 40px;
+      gap: 18px;
+    }
+
+    .list-tab {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      position: relative;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .list-tab.active {
+      color: var(--text-main);
+    }
+    .list-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background-color: var(--theme-primary);
+    }
+
+    .filter-link {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .email-items-container {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .email-row {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f3f2f1;
+      cursor: pointer;
+      display: flex;
+      gap: 12px;
+      transition: background 0.15s ease;
+      position: relative;
+    }
+    .email-row:hover {
+      background-color: var(--item-hover);
+    }
+    .email-row.selected {
+      background-color: #f3f6fa;
+    }
+    .email-row.selected::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3.5px;
+      background-color: var(--theme-primary);
+    }
+
+    .row-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 12px;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+
+    .row-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2px;
+    }
+
+    .row-sender {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .email-row.unread .row-sender {
+      color: #000000;
+      font-weight: 700;
+    }
+
+    .row-date {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .row-subject {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--theme-primary-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .email-row:not(.unread) .row-subject {
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .row-snippet {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+
+    /* Reading Pane (Right Side) */
+    .reading-pane {
+      flex: 1;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .reading-header-actions {
+      height: 48px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+
+    .reading-actions-left {
+      display: flex;
+      gap: 8px;
+    }
+
+    .read-action-btn {
+      background: transparent;
+      border: 1px solid var(--border-darker);
+      border-radius: 4px;
+      padding: 5px 12px;
+      font-size: 12.5px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .read-action-btn:hover {
+      background-color: var(--item-hover);
+    }
+    .read-action-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: var(--text-secondary);
+    }
+
+    .reading-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 36px 80px 36px;
+    }
+
+    .mail-subject-title {
+      font-size: 21px;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.35;
+      margin-bottom: 18px;
+    }
+
+    .mail-meta-card {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sender-avatar-large {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0078d4, #004578);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .sender-details {
+      flex: 1;
+    }
+
+    .sender-name-line {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sender-email {
+      font-weight: normal;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .recipient-line {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+    }
+
+    .date-line {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Email Body Typography */
+    .mail-body-content {
+      font-size: 14.5px;
+      line-height: 1.68;
+      color: #242424;
+      max-width: 860px;
+    }
+
+    .mail-body-content p {
+      margin-bottom: 16px;
+    }
+
+    .mail-section-heading {
+      font-size: 16.5px;
+      font-weight: 700;
+      color: #0b4b8a;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-left: 3.5px solid var(--theme-primary);
+      padding-left: 10px;
+    }
+
+    .mail-list {
+      margin: 10px 0 18px 24px;
+      list-style-type: disc;
+    }
+    .mail-list li {
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+    .mail-list strong {
+      color: #111;
+    }
+
+    .mail-quote-box {
+      background-color: #f8fafc;
+      border-left: 3px solid #0078d4;
+      padding: 12px 18px;
+      margin: 16px 0;
+      font-style: italic;
+      color: #475569;
+    }
+
+    /* Corporate Signature */
+    .corporate-signature {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px dashed var(--border-darker);
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+    .sig-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .sig-role {
+      color: var(--theme-primary-dark);
+      font-weight: 500;
+    }
+
+    /* Stealth Notice Bar / Shortcut Hint (Subtle bottom bar) */
+    .stealth-status-bar {
+      height: 24px;
+      background-color: #f3f2f1;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .stealth-status-bar span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-badge {
+      width: 7px;
+      height: 7px;
+      background-color: #107c10;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* Print and Responsive adjustments */
+    @media (max-width: 900px) {
+      .folder-pane { display: none; }
+      .message-list-pane { width: 280px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Suite Bar -->
+  <header class="suite-bar">
+    <div class="suite-left">
+      <button class="waffle-btn" title="App-Startfeld">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </button>
+      <div class="app-title">Outlook</div>
+    </div>
+
+    <div class="suite-search">
+      <div class="search-box">
+        <svg viewBox="0 0 20 20"><path d="M8.5 3a5.5 5.5 0 0 1 4.23 9.02l4.62 4.63a.75.75 0 1 1-1.06 1.06l-4.63-4.62A5.5 5.5 0 1 1 8.5 3zm0 1.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
+        <input type="text" class="search-input" placeholder="Suchen" id="searchInput">
+      </div>
+    </div>
+
+    <div class="suite-right">
+      <!-- Teams / Meet icon -->
+      <button class="suite-icon-btn" title="Jetzt besprechen">
+        <svg viewBox="0 0 20 20"><path d="M12.5 5a2.5 2.5 0 0 0-2.5 2.5v5A2.5 2.5 0 0 0 12.5 15h3a2.5 2.5 0 0 0 2.5-2.5v-5A2.5 2.5 0 0 0 15.5 5h-3zm-5.5 2a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2c-2.33 0-7 1.17-7 3.5V14h14v-1.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      </button>
+      <!-- OneNote / Feed -->
+      <button class="suite-icon-btn" title="OneNote Feed">
+        <svg viewBox="0 0 20 20"><path d="M4 3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H4zm1 3h10v1.5H5V6zm0 3.5h10V11H5V9.5zm0 3.5h7V14H5v-1z"/></svg>
+      </button>
+      <!-- Calendar Quick view -->
+      <button class="suite-icon-btn" title="Mein Tag">
+        <svg viewBox="0 0 20 20"><path d="M5 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1zm11 6H4v8h12V8z"/></svg>
+      </button>
+      <!-- Notifications -->
+      <button class="suite-icon-btn" title="Benachrichtigungen">
+        <svg viewBox="0 0 20 20"><path d="M10 2a6 6 0 0 0-6 6v3.586l-.707.707A1 1 0 0 0 4 14h12a1 1 0 0 0 .707-1.707L16 11.586V8a6 6 0 0 0-6-6zm-2 13a2 2 0 1 0 4 0H8z"/></svg>
+      </button>
+      <!-- Settings -->
+      <button class="suite-icon-btn" title="Einstellungen">
+        <svg viewBox="0 0 20 20"><path d="M9.05 2.05a1 1 0 0 1 1.9 0l.27 1.34a6.002 6.002 0 0 1 1.63.94l1.24-.6a1 1 0 0 1 1.34.49l.95 1.65a1 1 0 0 1-.22 1.41l-1.07.82c.07.31.11.63.11.95s-.04.64-.11.95l1.07.82a1 1 0 0 1 .22 1.41l-.95 1.65a1 1 0 0 1-1.34.49l-1.24-.6a6.002 6.002 0 0 1-1.63.94l-.27 1.34a1 1 0 0 1-1.9 0l-.27-1.34a6.002 6.002 0 0 1-1.63-.94l-1.24.6a1 1 0 0 1-1.34-.49l-.95-1.65a1 1 0 0 1 .22-1.41l1.07-.82A5.96 5.96 0 0 1 4.5 10c0-.32.04-.64.11-.95l-1.07-.82a1 1 0 0 1-.22-1.41l.95-1.65a1 1 0 0 1 1.34-.49l1.24.6c.49-.39 1.04-.71 1.63-.94l.27-1.34zM10 7.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+      </button>
+
+      <div class="user-avatar" title="Konto-Manager">DU</div>
+    </div>
+  </header>
+
+  <!-- Ribbon Bar -->
+  <nav class="ribbon-bar">
+    <button class="btn-new-mail">
+      <svg viewBox="0 0 20 20"><path d="M10 3a1 1 0 0 1 1 1v5h5a1 1 0 1 1 0 2h-5v5a1 1 0 1 1-2 0v-5H4a1 1 0 1 1 0-2h5V4a1 1 0 0 1 1-1z"/></svg>
+      Neue E-Mail
+    </button>
+    <div class="ribbon-sep"></div>
+    <button class="ribbon-action-btn" title="Löschen">
+      <svg viewBox="0 0 20 20"><path d="M6 4V3a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1h4a1 1 0 1 1 0 2h-1v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6H2a1 1 0 1 1 0-2h4zm2-1v1h4V3H8zm-3 3v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6H5z"/></svg>
+      Löschen
+    </button>
+    <button class="ribbon-action-btn" title="Archivieren">
+      <svg viewBox="0 0 20 20"><path d="M3 4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2H3V4zm1 4v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8H4zm4 2h4a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2z"/></svg>
+      Archivieren
+    </button>
+    <button class="ribbon-action-btn" title="Melden">
+      <svg viewBox="0 0 20 20"><path d="M4 3a1 1 0 0 1 1-1h10a1 1 0 0 1 .8 1.6L13.25 7l2.55 3.4a1 1 0 0 1-.8 1.6H5v5a1 1 0 1 1-2 0V3z"/></svg>
+      Melden
+    </button>
+    <button class="ribbon-action-btn" title="Verschieben">
+      <svg viewBox="0 0 20 20"><path d="M2 5a2 2 0 0 1 2-2h4.5a2 2 0 0 1 1.41.59L11.83 5H16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5zm10.7 4.3a1 1 0 0 0-1.4 1.4l1.3 1.3H8a1 1 0 1 0 0 2h4.6l-1.3 1.3a1 1 0 1 0 1.4 1.4l3-3a1 1 0 0 0 0-1.4l-3-3z"/></svg>
+      Verschieben
+    </button>
+    <button class="ribbon-action-btn" title="Als ungelesen markieren">
+      <svg viewBox="0 0 20 20"><path d="M2.5 4A1.5 1.5 0 0 0 1 5.5v9A1.5 1.5 0 0 0 2.5 16h15a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 17.5 4h-15zm.6 2h13.8l-6.9 4.6L3.1 6zm-.6 1.8 6.5 4.3a1 1 0 0 0 1.1 0l6.4-4.3v6.7H2.5V7.8z"/></svg>
+      Ungelesen
+    </button>
+  </nav>
+
+  <!-- Workspace -->
+  <div class="workspace">
+    <!-- Left Navigation Bar -->
+    <div class="app-rail">
+      <div class="app-rail-item active" title="E-Mail">
+        <svg viewBox="0 0 20 20"><path d="M2 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4zm2 .5v.67l6 4 6-4V4.5a.5.5 0 0 0-.5-.5h-11a.5.5 0 0 0-.5.5zm12 2.6-5.45 3.63a1 1 0 0 1-1.1 0L4 7.1V15.5a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5V7.1z"/></svg>
+      </div>
+      <div class="app-rail-item" title="Kalender">
+        <svg viewBox="0 0 20 20"><path d="M6 2a1 1 0 0 1 1 1v1h6V3a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1zm10 5H4v9h12V7z"/></svg>
+      </div>
+      <div class="app-rail-item" title="Kontakte">
+        <svg viewBox="0 0 20 20"><path d="M9 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm-3 5c2.67 0 8 1.34 8 4v2H0v-2c0-2.66 5.33-4 8-4zm7.5-7.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zm1.5 6.5c1.47.78 3 2.1 3 3.5V17h-4v-1.5c0-.98-.44-1.87-1.16-2.58.74-.28 1.48-.42 2.16-.42z"/></svg>
+      </div>
+      <div class="app-rail-item" title="To Do">
+        <svg viewBox="0 0 20 20"><path d="M16.7 5.3a1 1 0 0 1 0 1.4l-8 8a1 1 0 0 1-1.4 0l-4-4a1 1 0 1 1 1.4-1.4L8 12.6l7.3-7.3a1 1 0 0 1 1.4 0z"/></svg>
+      </div>
+    </div>
+
+    <!-- Folder Pane -->
+    <div class="folder-pane">
+      <div class="folder-section-title">Favoriten</div>
+      <div class="folder-item active" onclick="selectFolder('inbox')">
+        <div class="folder-item-left">
+          <svg viewBox="0 0 20 20"><path d="M3 4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4zm2 0v7h2.2a2 2 0 0 0 1.8 1.1h2a2 2 0 0 0 1.8-1.1H15V4H5z"/></svg>
+          Posteingang
+        </div>
+        <span class="badge-count">3</span>
+      </div>
+      <div class="folder-item" onclick="selectFolder('sent')">
+        <div class="folder-item-left">
+          <svg viewBox="0 0 20 20"><path d="M2.3 2.1a1 1 0 0 1 1.1-.1l14 7a1 1 0 0 1 0 1.8l-14 7a1 1 0 0 1-1.4-1.2l2-6.6-2-6.6a1 1 0 0 1 .3-1.3zM5.3 11l-1.3 4.4L14.7 10 4 4.6 5.3 9h5.7a1 1 0 1 1 0 2H5.3z"/></svg>
+          Gesendete Elemente
+        </div>
+      </div>
+      <div class="folder-item" onclick="selectFolder('drafts')">
+        <div class="folder-item-left">
+          <svg viewBox="0 0 20 20"><path d="M13.58 2.58a2 2 0 0 1 2.83 0l1 1a2 2 0 0 1 0 2.84l-9.5 9.5a1 1 0 0 1-.46.26l-4 1a1 1 0 0 1-1.22-1.22l1-4a1 1 0 0 1 .26-.46l9.5-9.5z"/></svg>
+          Entwürfe
+        </div>
+      </div>
+
+      <div class="folder-section-title" style="margin-top: 14px;">Ordner</div>
+      <div class="folder-item">
+        <div class="folder-item-left">
+          <svg viewBox="0 0 20 20"><path d="M3 4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2H3V4zm1 4v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8H4z"/></svg>
+          Archiv
+        </div>
+      </div>
+      <div class="folder-item">
+        <div class="folder-item-left">
+          <svg viewBox="0 0 20 20"><path d="M6 4V3a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1h4a1 1 0 1 1 0 2h-1v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6H2a1 1 0 1 1 0-2h4z"/></svg>
+          Gelöschte Elemente
+        </div>
+      </div>
+      <div class="folder-item">
+        <div class="folder-item-left">
+          <svg viewBox="0 0 20 20"><path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 14a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm1-9H9v5h2V7zm0 6H9v2h2v-2z"/></svg>
+          Junk-E-Mail
+        </div>
+      </div>
+    </div>
+
+    <!-- Message List Pane -->
+    <div class="message-list-pane">
+      <div class="list-tabs">
+        <div class="list-tab active" id="tabRelevant">Relevant</div>
+        <div class="list-tab" id="tabOther">Sonstige</div>
+        <div class="filter-link">
+          <span>Filter</span>
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M1.5 3h13l-5 6v5l-3-2V9l-5-6z"/></svg>
+        </div>
+      </div>
+
+      <div class="email-items-container" id="emailList">
+        <!-- Item 1: GTA 6 (The requested content) -->
+        <div class="email-row selected" id="row-gta" onclick="showEmail('gta')">
+          <div class="row-avatar" style="background-color: #0078d4;">MB</div>
+          <div class="row-content">
+            <div class="row-top">
+              <span class="row-sender">Michael Bergmann</span>
+              <span class="row-date">08:42</span>
+            </div>
+            <div class="row-subject">GTA 6 – Warum dieses Spiel eine außergewöhnliche kulturelle und technische Dimension hat</div>
+            <div class="row-snippet">Stell dir vor, jemand würde versuchen, eine komplette amerikanische Großstadt digital nachzubauen. Nicht nur die sichtbaren Gebäude...</div>
+          </div>
+        </div>
+
+        <!-- Item 2: IT Security (Stealth camouflage) -->
+        <div class="email-row" id="row-it" onclick="showEmail('it')">
+          <div class="row-avatar" style="background-color: #5c2d91;">IT</div>
+          <div class="row-content">
+            <div class="row-top">
+              <span class="row-sender">IT Infrastructure & Security</span>
+              <span class="row-date">Gestern</span>
+            </div>
+            <div class="row-subject">Ankündigung: Sicherheitsupdate und Wartungsfenster am Samstag</div>
+            <div class="row-snippet">Sehr geehrte Damen und Herren, im Rahmen der turnusmäßigen Server-Wartung werden am kommenden Samstag zwischen 22:00 und 04:00 Uhr...</div>
+          </div>
+        </div>
+
+        <!-- Item 3: HR Team (Camouflage) -->
+        <div class="email-row" id="row-hr" onclick="showEmail('hr')">
+          <div class="row-avatar" style="background-color: #107c10;">HR</div>
+          <div class="row-content">
+            <div class="row-top">
+              <span class="row-sender">Personalabteilung / HR</span>
+              <span class="row-date">Mo 15:10</span>
+            </div>
+            <div class="row-subject">Erinnerung: Einreichung der Urlaubsanträge für das kommende Quartal</div>
+            <div class="row-snippet">Liebe Kolleginnen und Kollegen, bitte denken Sie daran, Ihre Urlaubsanträge im Mitarbeiterportal bis spätestens Monatsende einzureichen...</div>
+          </div>
+        </div>
+
+        <!-- Item 4: General Team Notice -->
+        <div class="email-row" id="row-orga" onclick="showEmail('orga')">
+          <div class="row-avatar" style="background-color: #d83b01;">PM</div>
+          <div class="row-content">
+            <div class="row-top">
+              <span class="row-sender">Projektmanagement Office</span>
+              <span class="row-date">14. Nov</span>
+            </div>
+            <div class="row-subject">Protokoll zum internen Abstimmungsmeeting & Meilenstein-Übersicht</div>
+            <div class="row-snippet">Hallo zusammen, anbei findet ihr das freigegebene Protokoll der letzten Lenkungskreis-Sitzung sowie die aktualisierte Meilenstein-Roadmap...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reading Pane -->
+    <main class="reading-pane" id="readingPane">
+      <div class="reading-header-actions">
+        <div class="reading-actions-left">
+          <button class="read-action-btn" title="Antworten">
+            <svg viewBox="0 0 20 20"><path d="M7.7 5.3a1 1 0 0 1 0 1.4L4.4 10H14a4 4 0 0 1 4 4v2a1 1 0 1 1-2 0v-2a2 2 0 0 0-2-2H4.4l3.3 3.3a1 1 0 0 1-1.4 1.4l-5-5a1 1 0 0 1 0-1.4l5-5a1 1 0 0 1 1.4 0z"/></svg>
+            Antworten
+          </button>
+          <button class="read-action-btn" title="Allen antworten">
+            <svg viewBox="0 0 20 20"><path d="M12 5l-5 5 5 5V5zM7 5L2 10l5 5V5z"/></svg>
+            Allen antworten
+          </button>
+          <button class="read-action-btn" title="Weiterleiten">
+            <svg viewBox="0 0 20 20"><path d="M12.3 5.3a1 1 0 0 0 0 1.4l3.3 3.3H6a4 4 0 0 0-4 4v2a1 1 0 1 0 2 0v-2a2 2 0 0 1 2-2h9.6l-3.3 3.3a1 1 0 0 0 1.4 1.4l5-5a1 1 0 0 0 0-1.4l-5-5a1 1 0 0 0-1.4 0z"/></svg>
+            Weiterleiten
+          </button>
+        </div>
+      </div>
+
+      <!-- Email Content: GTA 6 -->
+      <div class="reading-scroll-area" id="emailContent">
+        <!-- Will be dynamically injected or switched -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Bottom Status / Camouflage Bar -->
+  <footer class="stealth-status-bar">
+    <span><span class="status-badge"></span> Verbunden mit: Microsoft Exchange Online</span>
+    <span style="opacity: 0.8;">Tipp: Drücke <strong>ESC</strong> für schnellen Wechsel zur IT-Wartungsmail</span>
+  </footer>
+
+  <script>
+    const emails = {
+      gta: {
+        title: "GTA 6 – Warum dieses Spiel eine außergewöhnliche kulturelle und technische Dimension hat - Outlook",
+        subject: "GTA 6 – Warum dieses Spiel eine außergewöhnliche kulturelle und technische Dimension hat",
+        senderName: "Michael Bergmann",
+        senderEmail: "m.bergmann@corporate-research.internal",
+        recipient: "Sie <intern@workplace.com>",
+        date: "Heute, 08:42 Uhr",
+        avatar: "MB",
+        avatarColor: "linear-gradient(135deg, #0078d4, #004578)",
+        html: `
+          <div class="mail-subject-title">GTA 6 – Warum dieses Spiel eine außergewöhnliche kulturelle und technische Dimension hat</div>
+          
+          <div class="mail-meta-card">
+            <div class="sender-avatar-large" style="background: linear-gradient(135deg, #0078d4, #004578);">MB</div>
+            <div class="sender-details">
+              <div class="sender-name-line">
+                Michael Bergmann
+                <span class="sender-email">&lt;m.bergmann@corporate-research.internal&gt;</span>
+              </div>
+              <div class="recipient-line">An: Sie &lt;intern@workplace.com&gt;</div>
+              <div class="date-line">Heute, 08:42 Uhr</div>
+            </div>
+          </div>
+
+          <div class="mail-body-content">
+            <p>Stell dir vor, jemand würde versuchen, eine komplette amerikanische Großstadt digital nachzubauen. Nicht nur die sichtbaren Gebäude, Straßen und Menschen, sondern möglichst alles, was eine echte Gesellschaft und ihren Lebensraum ausmacht.</p>
+
+            <p>Die physische Infrastruktur. Die Versorgungssysteme. Die Verkehrsströme. Die unterschiedlichen sozialen Schichten und Milieus. Die Kultur, den Humor, die Medien. Die Natur samt Ökosystemen. Und das unberechenbare Verhalten von Millionen Individuen.</p>
+
+            <p>Und dann soll diese Stadt nicht nur von außen gut aussehen. Sie soll funktionieren. Sie soll auf dich reagieren. Du sollst sie betreten, erkunden und mit ihr interagieren können – ohne dass die Illusion an der nächsten Straßenecke zerbricht.</p>
+
+            <p><strong>Genau das ist der Anspruch hinter der Grand Theft Auto-Reihe.</strong></p>
+
+            <div class="mail-section-heading">1. Es geht nicht um eine Spielkarte. Es geht um einen lebendigen Organismus.</div>
+            <p>Ein gutes Beispiel dafür ist bereits GTA V aus dem Jahr 2013.</p>
+            <p>Die meisten Menschen sehen darin eine riesige Spielkarte mit Straßen, Palmen und Hochhäusern. Aber wenn man genauer hinschaut, erkennt man, wie absurd detailliert diese Welt konstruiert ist:</p>
+            <ul class="mail-list">
+              <li><strong>Stromversorgung:</strong> Du kannst Überlandleitungen durch die Landschaft verfolgen. Sie führen über Masten, Trafostationen und Umspannwerke bis zu Kraftwerken. Es sind keine rein dekorativen Masten, sondern sichtbare Glieder einer elektrischen Infrastruktur.</li>
+              <li><strong>Verkehrsnetze:</strong> Autobahnkreuze, Unterführungen, Brücken, Ampelschaltungen, Parkleitsysteme, Tankstellen und Beschilderungen bilden ein in sich schlüssiges Straßennetz.</li>
+              <li><strong>Rettungswesen & Einsatzkräfte:</strong> Krankenhäuser mit Notaufnahmen, Rettungswagen mit Sanitätern, Feuerwachen mit Ausrückzeiten sowie Polizeireviere mit gestaffelten Fahndungssystemen.</li>
+              <li><strong>Wirtschaftskreisläufe:</strong> Industriegebiete, Güterbahnhöfe, Containerhäfen, Baustellen, Banken, Supermärkte und Restaurants.</li>
+              <li><strong>Öffentliche Räume:</strong> Strände, Parks, Sportanlagen, Villenviertel und verarmte Randbezirke.</li>
+            </ul>
+            <p>Das Entscheidende ist: Diese Dinge existieren nicht isoliert nebeneinander. Sie ergeben gemeinsam das funktionierende Bild einer Stadt.</p>
+            <p>Du fährst an einem Umspannwerk vorbei, dessen Leitungen den Strom verteilen. Du beobachtest einen Krankenwagen, der sich mit Sirene durch den Berufsverkehr drängt. Du siehst am Hafen Kräne, die Container verladen. Das ist keine Ansammlung hübscher Kulissenobjekte – es ist der Versuch, die komplexen Zusammenhänge einer realen Welt digital zu spiegeln.</p>
+
+            <div class="mail-section-heading">2. Hinter der sichtbaren Oberfläche: Systeme statt Skripte</div>
+            <p>Wenn du durch eine ganz normale Straße in Los Santos läufst, siehst du Asphalt, Autos und Fußgänger. Doch hinter jedem Quadratmeter stecken unzählige unsichtbare Ebenen:</p>
+            <ul class="mail-list">
+              <li>Die Straße besitzt Kanaldeckel, Gullis, Hydranten, Laternen und Abnutzungsspuren.</li>
+              <li>Autos fahren nicht auf vorgezeichneten Schienen, sondern navigieren über ein dynamisches Verkehrssystem.</li>
+              <li>Fußgänger sind keine Marionetten: Sie reagieren auf Wetter, Tageszeit, Hupen, gezückte Kameras oder Bedrohungen.</li>
+            </ul>
+            <p>Und hier kommt die Physik ins Spiel: Rockstar nutzt dafür keine starren, abgespielten Animationen, sondern fortschrittliche Physik-Engines (wie die prozedurale Euphoria-Physik).</p>
+            <p>Wird ein Passant angerempelt oder von einem Auto erfasst, läuft kein vorgefertigtes Video ab. Sein virtueller Körper versucht physikalisch, das Gleichgewicht zu halten, greift nach Motorhauben, stürzt über Bordsteinkanten und federt den Aufprall ab.</p>
+            <p>Dadurch entsteht sogenannte Emergenz: Unvorhersehbare Kettenreaktionen. Ein kleiner Auffahrunfall führt zu einem hupenden Stau; zwei Fahrer geraten in Streit; ein Passant ruft die Polizei; ein Streifenwagen biegt mit Vollgas um die Kurve, touchiert eine Ampel – und plötzlich entsteht eine dynamische Verfolgungsjagd, die kein einziger Programmierer jemals vorherbestimmt hat. Die Stadt lebt aus ihren eigenen physikalischen Regeln heraus.</p>
+
+            <div class="mail-section-heading">3. Die akustische Identität: Radio, Kultur und der Sound der Straße</div>
+            <p>Eine Stadt besteht nicht nur aus Optik, sie besteht aus Klang.</p>
+            <p>Wenn du in ein Auto steigst, schlägt dir nicht einfach Hintergrundmusik entgegen. Du hast Dutzende voll lizenzierte Radiosender, kuratiert von echten DJs, Pop-Ikonen und Musiklegenden – von Hip-Hop und Reggae über Country bis hin zu Talkradio.</p>
+            <p>Dazwischen laufen fiktive Werbespots und Nachrichtensendungen, die das aktuelle Zeitgeschehen im Spiel kommentieren. Die Radiosender von GTA sind längst selbst zu popkulturellen Ikonen geworden. Sie erzeugen das Gefühl, dass du tatsächlich durch eine lebendige amerikanische Medienlandschaft fährst.</p>
+
+            <div class="mail-section-heading">4. Das fehlende Bindeglied: Red Dead Redemption 2 (2018)</div>
+            <p>Oft wird gesagt: „GTA V ist 2013 erschienen – schaut, wie viel Zeit vergangen ist.“ Doch wer die Evolution von Rockstar verstehen will, darf das Meisterwerk dazwischen nicht übersehen: Red Dead Redemption 2 aus dem Jahr 2018.</p>
+            <p>RDR2 war der Beweis, dass Rockstar die Grenze zwischen Kulisse und echter Welt ein weiteres Mal verschoben hat:</p>
+            <ul class="mail-list">
+              <li><strong>Kontextuelle Interaktion:</strong> Du konntest plötzlich mit jedem einzelnen Menschen in der Welt interagieren – ihn grüßen, verspotten, bedrohen, ausfragen oder ihm helfen. NPCs hatten Tagesabläufe, ein Gedächtnis und erinnerten sich daran, wenn du ihnen Stunden zuvor Unrecht getan hattest.</li>
+              <li><strong>Mikro-Details:</strong> Wolken und Nebel wurden volumetrisch berechnet, Schlamm und Schnee bildeten tiefe Spuren, Tierkadaver verwesten im Laufe von Spieltagen organisch in der Natur.</li>
+            </ul>
+            <p>Dieses technische Fundament – der Übergang von einer reinen Kulisse zu einer tief simulierten Ökologie und Soziologie – ist die eigentliche Startrampe für GTA 6.</p>
+
+            <div class="mail-section-heading">5. GTA als soziologischer Spiegel: Die Ära von Social Media und „Florida Man“</div>
+            <p>GTA war noch nie nur eine Verbrecher-Simulation; es ist die schärfste Satire auf den amerikanischen Traum, den Konsumwahn und die gesellschaftlichen Extreme unserer Zeit.</p>
+            <p>GTA VI verlegt das Geschehen in den Bundesstaat Leonida (angelehnt an Florida) und nach Vice City (Miami). Und dieser Schauplatz ist kein Zufall:</p>
+            <ul class="mail-list">
+              <li><strong>Die Realsatire:</strong> Das reale Florida ist weltberühmt für bizarre Schlagzeilen („Florida Man“), hemmungslosen Luxus, Alligatoren im Swimmingpool, Waffenbegeisterung und extreme politische wie soziale Kontraste.</li>
+              <li><strong>Die Social-Media-Kultur:</strong> Der erste Trailer zu GTA VI hat gezeigt, worum es im Kern geht: TikTok, Instagram, Livestreams und Bodycams. GTA VI bildet nicht mehr nur die physische Stadt ab, sondern die Art und Weise, wie die moderne Gesellschaft ihr Leben durch Smartphone-Bildschirme inszeniert, streamt und voyeuristisch konsumiert. Das Spiel fängt den Zeitgeist der 2020er-Jahre ein wie kaum ein anderes Kulturmedium.</li>
+            </ul>
+
+            <div class="mail-section-heading">6. Tausende Spezialisten für eine einzige Illusion</div>
+            <p>Um eine solche Welt zu erschaffen, reicht kein gewöhnliches Entwicklerteam. Es braucht eine gigantische Organisation aus Fachleuten:</p>
+            <ul class="mail-list">
+              <li>Schauspieler, die Figuren in Motion-Capture-Anzügen über Monate hinweg Leben einhauchen.</li>
+              <li>Autoren, die tausende Seiten Dialoge für Hauptfiguren, aber auch für beiläufige Gespräche am Straßenrand verfassen.</li>
+              <li>3D-Künstler & Architektur-Scouts, die reale Städte fotografieren, vermessen und die typische Baustruktur von Miami und den Everglades nachempfinden.</li>
+              <li>Akustiker & Foley-Artists, die vom Summen eines Transformators bis zum Platschen von Sumpfwasser jedes Geräusch einzeln aufnehmen.</li>
+              <li>Physiker & KI-Programmierer, die Algorithmen für Menschenmassen, Verkehrsdichte und dynamisches Verhalten entwickeln.</li>
+            </ul>
+            <p>Ein Spezialist kann sich monatelang ausschließlich mit der Bewegung von Alligatoren im seichten Wasser beschäftigen. Ein anderer mit der Lichtbrechung auf sonnengecremter Haut am Strand. Es sind künstlerische und wissenschaftliche Disziplinen, die hier ineinandergreifen.</p>
+
+            <div class="mail-section-heading">7. Warum GTA VI in einer völlig eigenen Liga spielt</div>
+            <p>Wenn man die ersten Einblicke in GTA VI analysiert, wird klar, welcher technische Generationssprung hier vollzogen wird:</p>
+            <ul class="mail-list">
+              <li><strong>Massendichte ohne Klon-Effekt:</strong> Ein Blick auf den virtuellen South Beach zeigt hunderte Menschen gleichzeitig. Keine identischen Kopien, sondern Individuen mit unterschiedlichen Körperformen, Hauttönen, Tattoos und Verhaltensweisen – manche joggen, manche trinken, manche sonnen sich, andere streicheln Hunde oder filmen für Social Media.</li>
+              <li><strong>Beleuchtung und Reflexionen:</strong> Durch moderne Beleuchtungstechnologien (Raytracing/Global Illumination) verhält sich Licht wie in der realen Welt: Es bricht sich im feuchten Dunst der Tropennacht, reflektiert in Pfützen und strahlt durch Neonröhren auf glänzende Autokarosserien.</li>
+              <li><strong>Nahtlose Innenräume:</strong> Während in älteren Open-World-Spielen die meisten Gebäude verschlossene Kulissen waren, deutet alles darauf hin, dass in GTA VI ein beispiellos hoher Anteil an Supermärkten, Clubs, Hotels und Wohnungen nahtlos betretbar sein wird.</li>
+            </ul>
+
+            <div class="mail-section-heading">8. Die Dimension eines weltweiten Kulturereignisses</div>
+            <p>Warum interessiert sich die halbe Welt für dieses Spiel – selbst Menschen, die sonst nie eine Konsole anfassen?</p>
+            <p>Videospiele sind längst die wirtschaftlich größte Unterhaltungsbranche der Welt – größer als die globale Film- und Musikindustrie zusammen. Und GTA steht an der absoluten Spitze dieser Pyramide:</p>
+            <ul class="mail-list">
+              <li><strong>Der wirtschaftliche Gigant:</strong> GTA V hat sich über 200 Millionen Mal verkauft und über 8 Milliarden US-Dollar eingespielt. Es ist das profitabelste Unterhaltungsprodukt, das die Menschheit je hervorgebracht hat – erfolgreicher als Avatar, Star Wars oder Titanic.</li>
+              <li><strong>Das Budget von GTA VI:</strong> Schätzungen beziffern die Entwicklungs- und Vermarktungskosten von GTA VI auf 1 bis 2 Milliarden US-Dollar. Es gibt kein Filmstudio auf der Welt, das ein solches Budget für eine einzige Produktion bereitstellen könnte.</li>
+              <li><strong>Das Metaversum vor dem Metaversum:</strong> Mit GTA Online und der florierenden Roleplay-Community (FiveM) – auf der echte Menschen tagtäglich als Polizisten, Sanitäter oder Werkstattbesitzer arbeiten – ist GTA längst zu einem persistenten digitalen Paralleluniversum geworden.</li>
+            </ul>
+
+            <div class="mail-section-heading">Fazit</div>
+            <p>Man kann sich die Entstehung von GTA VI so vorstellen:</p>
+            <ul class="mail-list">
+              <li>Ein Hollywood-Studio dreht ein episches Kriminaldrama.</li>
+              <li>Ein Architekturbüro plant eine ganze Metropole samt Vororten und Naturparks.</li>
+              <li>Ein soziologisches Institut analysiert die Absurditäten der modernen Social-Media-Gesellschaft.</li>
+              <li>Ein Physiklabor berechnet die Gesetzmäßigkeiten von Stoßwellen, Flüssigkeiten und Licht.</li>
+              <li>Ein Musiklabel produziert dutzende Soundtracks und Radiosender.</li>
+            </ul>
+            <p>All diese Disziplinen fließen in ein einziges, interaktives Kunstwerk.</p>
+            <p>Das Ergebnis ist kein Film, den man nach zwei Stunden passiv verlässt. Es ist eine funktionierende, atmende, satirische und physikalisch lebendige Ersatzwelt, in der man sich frei bewegen und seine eigenen Geschichten schreiben kann. Genau deshalb ist GTA 6 kein gewöhnliches Videospiel – es ist das aufwendigste digitale Kulturprojekt unserer Zeit.</p>
+
+            <div class="corporate-signature">
+              <div class="sig-name">Michael Bergmann</div>
+              <div class="sig-role">Lead Analyst & Digital Systems Architecture</div>
+              <div>Abteilung: Enterprise Concepts & Emerging Technologies</div>
+              <div style="margin-top: 4px; font-size: 11.5px; color: #8a8886;">Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte Informationen. Wenn Sie nicht der richtige Adressat sind, informieren Sie bitte sofort den Absender.</div>
+            </div>
+          </div>
+        `
+      },
+
+      it: {
+        title: "Ankündigung: Sicherheitsupdate und Wartungsfenster am Samstag - Outlook",
+        subject: "Ankündigung: Sicherheitsupdate und Wartungsfenster am Samstag",
+        senderName: "IT Infrastructure & Security",
+        senderEmail: "servicedesk@corporate-it.internal",
+        recipient: "Alle Mitarbeiter <all-staff@workplace.com>",
+        date: "Gestern, 16:30 Uhr",
+        avatar: "IT",
+        avatarColor: "linear-gradient(135deg, #5c2d91, #32145a)",
+        html: `
+          <div class="mail-subject-title">Ankündigung: Sicherheitsupdate und Wartungsfenster am Samstag</div>
+          <div class="mail-meta-card">
+            <div class="sender-avatar-large" style="background: linear-gradient(135deg, #5c2d91, #32145a);">IT</div>
+            <div class="sender-details">
+              <div class="sender-name-line">
+                IT Infrastructure & Security
+                <span class="sender-email">&lt;servicedesk@corporate-it.internal&gt;</span>
+              </div>
+              <div class="recipient-line">An: Alle Mitarbeiter &lt;all-staff@workplace.com&gt;</div>
+              <div class="date-line">Gestern, 16:30 Uhr</div>
+            </div>
+          </div>
+          <div class="mail-body-content">
+            <p>Sehr geehrte Damen und Herren,<br>liebe Kolleginnen und Kollegen,</p>
+            <p>im Rahmen der turnusmäßigen Server-Wartung und zur Gewährleistung unserer IT-Sicherheitsstandards werden am kommenden Wochenende essenzielle Sicherheitsupdates auf allen zentralen Systemen eingespielt.</p>
+            <div class="mail-section-heading">Details zum Wartungsfenster:</div>
+            <ul class="mail-list">
+              <li><strong>Zeitraum:</strong> Samstag, 22:00 Uhr bis Sonntag, 04:00 Uhr</li>
+              <li><strong>Betroffene Dienste:</strong> VPN-Zugang, interne Fileserver und Dokumentenmanagementsystem</li>
+              <li><strong>Auswirkungen:</strong> Während dieser Zeit kann es zu temporären Unterbrechungen beim Zugriff auf Netzlaufwerke kommen. E-Mail-Dienste (Microsoft 365 / Outlook) bleiben regulär erreichbar.</li>
+            </ul>
+            <p>Bitte stellen Sie sicher, dass alle geöffneten Dokumente am Freitag vor dem Verlassen des Arbeitsplatzes lokal oder in der Cloud zwischengespeichert und Programme geschlossen werden.</p>
+            <p>Bei Rückfragen steht Ihnen der IT-Helpdesk unter der Durchwahl -4444 gerne zur Verfügung.</p>
+            <div class="corporate-signature">
+              <div class="sig-name">IT Service Desk & Support</div>
+              <div class="sig-role">Zentrale Informationssicherheit & Infrastruktur</div>
+            </div>
+          </div>
+        `
+      },
+
+      hr: {
+        title: "Erinnerung: Einreichung der Urlaubsanträge - Outlook",
+        subject: "Erinnerung: Einreichung der Urlaubsanträge für das kommende Quartal",
+        senderName: "Personalabteilung / HR",
+        senderEmail: "hr-services@corporate-hr.internal",
+        recipient: "Alle Mitarbeiter <all-staff@workplace.com>",
+        date: "Mo 15:10 Uhr",
+        avatar: "HR",
+        avatarColor: "linear-gradient(135deg, #107c10, #094b09)",
+        html: `
+          <div class="mail-subject-title">Erinnerung: Einreichung der Urlaubsanträge für das kommende Quartal</div>
+          <div class="mail-meta-card">
+            <div class="sender-avatar-large" style="background: linear-gradient(135deg, #107c10, #094b09);">HR</div>
+            <div class="sender-details">
+              <div class="sender-name-line">
+                Personalabteilung / HR
+                <span class="sender-email">&lt;hr-services@corporate-hr.internal&gt;</span>
+              </div>
+              <div class="recipient-line">An: Alle Mitarbeiter &lt;all-staff@workplace.com&gt;</div>
+              <div class="date-line">Montag, 15:10 Uhr</div>
+            </div>
+          </div>
+          <div class="mail-body-content">
+            <p>Hallo zusammen,</p>
+            <p>wir möchten freundlich daran erinnern, die Urlaubsplanung für die kommenden Monate zeitnah im Employee Self-Service (ESS) Portal einzutragen und mit euren jeweiligen Teamleitungen abzustimmen.</p>
+            <p>Eine frühzeitige Abstimmung sichert eine reibungslose Übergabe laufender Projekte sowie die Vertretungsregelungen im Team.</p>
+            <div class="corporate-signature">
+              <div class="sig-name">HR People Operations</div>
+              <div class="sig-role">Human Resources Department</div>
+            </div>
+          </div>
+        `
+      },
+
+      orga: {
+        title: "Protokoll zum internen Abstimmungsmeeting - Outlook",
+        subject: "Protokoll zum internen Abstimmungsmeeting & Meilenstein-Übersicht",
+        senderName: "Projektmanagement Office",
+        senderEmail: "pmo@corporate-projects.internal",
+        recipient: "Projektgruppe <core-team@workplace.com>",
+        date: "14. Nov, 11:05 Uhr",
+        avatar: "PM",
+        avatarColor: "linear-gradient(135deg, #d83b01, #8e2700)",
+        html: `
+          <div class="mail-subject-title">Protokoll zum internen Abstimmungsmeeting & Meilenstein-Übersicht</div>
+          <div class="mail-meta-card">
+            <div class="sender-avatar-large" style="background: linear-gradient(135deg, #d83b01, #8e2700);">PM</div>
+            <div class="sender-details">
+              <div class="sender-name-line">
+                Projektmanagement Office
+                <span class="sender-email">&lt;pmo@corporate-projects.internal&gt;</span>
+              </div>
+              <div class="recipient-line">An: Projektgruppe &lt;core-team@workplace.com&gt;</div>
+              <div class="date-line">14. November, 11:05 Uhr</div>
+            </div>
+          </div>
+          <div class="mail-body-content">
+            <p>Hallo zusammen,</p>
+            <p>vielen Dank für die produktive Teilnahme an der gestrigen Abstimmungsrunde. Die Kernaufgaben für den aktuellen Sprint sind im Dashboard synchronisiert worden.</p>
+            <p>Bitte prüft bis morgen 12:00 Uhr eure jeweiligen Arbeitspakete im System.</p>
+            <div class="corporate-signature">
+              <div class="sig-name">Project Management Office (PMO)</div>
+              <div class="sig-role">Strategic Operations</div>
+            </div>
+          </div>
+        `
+      }
+    };
+
+    function showEmail(key) {
+      const email = emails[key];
+      if (!email) return;
+
+      // Update document title for stealth
+      document.title = email.title;
+
+      // Update rows highlight
+      document.querySelectorAll('.email-row').forEach(row => {
+        row.classList.remove('selected');
+      });
+      const targetRow = document.getElementById(`row-${key}`);
+      if (targetRow) targetRow.classList.add('selected');
+
+      // Update reading pane content
+      document.getElementById('emailContent').innerHTML = email.html;
+      // Scroll to top
+      document.getElementById('emailContent').scrollTop = 0;
+    }
+
+    function selectFolder(folder) {
+      document.querySelectorAll('.folder-item').forEach(item => item.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+    }
+
+    // Stealth / Boss Key: Press Escape to quickly switch to the harmless IT maintenance mail
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const isCurrentGta = document.getElementById('row-gta').classList.contains('selected');
+        if (isCurrentGta) {
+          showEmail('it');
+        } else {
+          showEmail('gta');
+        }
+      }
+    });
+
+    // Default initialization
+    showEmail('gta');
+  </script>
+</body>
+</html>
